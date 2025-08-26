@@ -13,7 +13,7 @@ use App\http\Controllers\SiteElementController;
 
 // categories routes
 
-Route::post('/categories', [CategorieController::class, 'store']);
+/*Route::post('/categories', [CategorieController::class, 'store']);
 Route::get('/categories', [CategorieController::class, 'index']);
 Route::get('/categories/{id}', [CategorieController::class, 'show']);
 Route::put('/categories/{id}', [CategorieController::class, 'update']);
@@ -28,10 +28,7 @@ Route::delete('/produits/{id}', [ProduitController::class, 'destroy']);
 
 
 //produit images routes
-Route::post('/produit-images', [ProduitImageController::class, 'store']);
-Route::get('/produit-images', [ProduitImageController::class, 'index']);
-Route::get('/produit-images/{id}', [ProduitImageController::class, 'show']);
-Route::put('/produit-images/{id}', [ProduitImageController::class, 'update']);
+
 Route::delete('/produit-images/{id}', [ProduitImageController::class, 'destroy']);
 
 
@@ -57,3 +54,11 @@ Route::get('/news-letters/{id}', [NewsLetterController::class, 'show']);
 Route::put('/news-letters/{id}', [NewsLetterController::class, 'update']);
 Route::delete('/news-letters/{id}', [NewsLetterController::class, 'destroy']);
 
+*/
+
+Route::apiResource('categories', CategorieController::class);
+Route::apiResource('produits', ProduitController::class);
+Route::apiResource('site-elements', SiteElementController::class);
+Route::apiResource('contacts', ContactController::class);
+Route::apiResource('news-letters', NewsLetterController::class);
+Route::delete('/produit-images/{id}', [ProduitImageController::class, 'destroy']);

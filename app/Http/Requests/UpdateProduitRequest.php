@@ -21,8 +21,15 @@ class UpdateProduitRequest extends FormRequest
      */
     public function rules(): array
     {
+        $id=$this->route('produit');  //recupere l'id du produit a modifier
         return [
-            //
+            'name'         => 'required|string|max:255|unique:produits,name'.$id,
+            'categorie_id' => 'required|exists:categories,id',
+            'description1' => 'required|string|max:255',
+            'description2' => 'required|text|max:1000',
+            'prix'         => 'required|numeric|min:0|max:999999.99',
+            
+
         ];
     }
 }

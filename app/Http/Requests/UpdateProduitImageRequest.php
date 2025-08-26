@@ -21,8 +21,12 @@ class UpdateProduitImageRequest extends FormRequest
      */
     public function rules(): array
     {
+
+        $id=$this->route('image');
         return [
-            //
+
+            'images'     => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048'.$id,
+            'product_id' => 'required|exists:products,id',
         ];
     }
 }
