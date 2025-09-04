@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Produit;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Testing\Fluent\Concerns\Has;
 
 class ProduitImage extends Model
 {
-    protected $fillable =['produit_id','image_url'];
+    use HasFactory;
+
+    protected $fillable =['produit_id','image_path','is_cover'];
 
     //relation une image pour un produit
 

@@ -18,8 +18,9 @@ class CategorieResource extends JsonResource
             'id'=>$this->id,
             'name'=>$this->name,
             'produits'=>ProduitResource::collection($this->whenLoaded('produits')),
-            'created_at'=>$this->created_at->format('y-m-d H:i:s'),
-            'updated_at'=>$this->updated_at->format('y-m-d H:i:s'),
+            'produits_count' => $this->when($this->produits_count !== null, $this->produits_count),
+            'created_at'=>$this->created_at->format('Y-m-d H:i:s'),
+            'updated_at'=>$this->updated_at->format('Y-m-d H:i:s'),
         ];
     }
 }

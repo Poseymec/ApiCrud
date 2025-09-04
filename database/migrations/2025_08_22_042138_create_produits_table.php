@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('produits', function (Blueprint $table) {
             $table->id();
             $table->foreignId('categorie_id')->constrained('categories')->onDelete('cascade');
-            $table->string('name');
+            $table->string('name')->unique();
             $table->string('description1')->nullable();
             $table->text('description2');
-            $table->decimal('price', 8, 2);
+            $table->decimal('prix', 8, 2);
+            $table->string('status')->default('active'); // e.g., 'active', 'inactive'
             $table->timestamps();
         });
     }

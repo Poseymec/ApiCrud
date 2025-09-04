@@ -61,4 +61,4 @@ Route::apiResource('produits', ProduitController::class);
 Route::apiResource('site-elements', SiteElementController::class);
 Route::apiResource('contacts', ContactController::class);
 Route::apiResource('news-letters', NewsLetterController::class);
-Route::delete('/produit-images/{id}', [ProduitImageController::class, 'destroy']);
+Route::patch('produits/{produit}/toggle-status', [ProduitController::class, 'toggleStatus']);

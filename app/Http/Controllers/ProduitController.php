@@ -2,108 +2,164 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\ProduitResource;
-use Illuminate\Http\Request;
-use App\Models\Produit;
 use App\Http\Requests\StoreProduitRequest;
 use App\Http\Requests\UpdateProduitRequest;
-use App\Models\ProduitImage;
+use App\Http\Resources\ProduitResource;
+use App\Models\Produit;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ProduitController extends Controller
 {
-    /**
-     * afficher les produits .
-     */
+
+
+    //afficher tous les produits avec leurs categories et images
     public function index()
     {
-        return ProduitResource::collection(Produit::with('images','categories')->get());
+        $produits = Produit::with(['images', 'categorie'])->get();
+        return ProduitResource::collection($produits);
     }
-
-    /**
-     * enregister un produit dans la base avec ses image.
-     */
-    public function store(StoreProduitRequest $request)
+     
+    //enregistrer un nouveau produit en uilisant le form request StoreProduitRequest
+    public function store(StoreProduitRequest $request): JsonResponse // un JsonResponse pour retourner une reponse json
     {
-        $produit = Produit::create($request->validated());
 
-        // enregister les images du produit
-        if($request->hasFile('images')){
-            foreach($request->file('images') as $file){
-                $path = $file->store('produit_images','public');
-                $produit->produit_images()->create(['path'=>$path]);
+        //utiliser un try catch pour gerer les erreurs
+        try {
+            DB::beginTransaction(); // pour assuerer la coherence des donnees *soit tout reussi soit rien*
+
+            $produit = Produit::create($request->validated()); // pour renvoyer les donnees valides du form request
+
+            // Gérer l'upload des images si elles sont présentes
+            if ($request->hasFile('images')) {
+                $this->ajoutImages($request, $produit);
             }
+
+            DB::commit();//valider les operations
+
+            // Retourner une réponse JSON avec le produit créé
+            return response()->json([
+                'message' => 'Produit créé avec succès',
+                'data' => new ProduitResource($produit->load(['images', 'categorie']))
+            ], 201);
+
+            //gerer les erreurs
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur création produit: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Erreur lors de la création du produit',
+                'error' => $e->getMessage()
+            ], 500);
         }
-        return new ProduitResource($produit->laod('produit_images','categories'));
     }
 
-    /**
-     * afficher un poduit en foction de son Id.
-     */
+    //afficher un produit par son id avec ses images et sa categorie
     public function show(string $id)
     {
-        $produit= Produit::with('images')->findOrFail($id);
-
+        $produit = Produit::with(['images', 'categorie'])->findOrFail($id);
         return new ProduitResource($produit);
-        
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateProduitRequest $request, string $id)
+    //mettre a jour un produit par son id en utilisant le form request UpdateProduitRequest
+    public function update(UpdateProduitRequest $request, Produit $produit): JsonResponse
     {
-        //on fait une transsction pour eviter incoherence s'il ya erreur
-        DB:: beginTransection();
-
-        try{
-            //recuperer les produit
-            $produit = Produit::findOrFail($id);
-        
-            //mettre a jour les infirmation des produits
+        try {
+            DB::beginTransaction();
 
             $produit->update($request->validated());
 
-            //gerer les images
-
-            if($request->hasFile('images')){
-                foreach($request->file('images') as $image)
-                {
-                    $path = $image->store('produit_images','public');
-
-                    ProduitImage::create([
-                        'produit-id'=>$produit->id,
-                        'url'=> $path
-                    ]);
-                }
-
+            if ($request->hasFile('images')) {
+                $this->ajoutImages($request, $produit);
             }
-                
+
             DB::commit();
 
-            // retourner dans la resource produit 
-
-            return new ProduitResource($produit->laod('images'));
-            
-        } catch(\Exception $e){
+            // Retourner directement la resource
+            return response()->json(
+                new ProduitResource($produit->load(['images', 'categorie']))
+            );
+        } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'message'=>'Erreur lors de la mise a jour du produit',
-                'error'=>$e->getMessage()
-            ],500);
-            
+            Log::error('Erreur mise à jour produit: ' . $e->getMessage());
 
+            return response()->json([
+                'message' => 'Erreur lors de la mise à jour du produit',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
-    /**
-     * supprimer un produit de la base de données.
-     */
-    public function destroy(string $id)
+    //supprimer un produit par son id
+    public function destroy(Produit $produit): JsonResponse
     {
-       $produit = Produit:: findOrFail($id);
+        try {
+            DB::beginTransaction();
 
-       $produit->delete();
-         return response()->json(['message'=>'produit supprimé avec succés']);
+            // Supprimer les fichiers du disque
+            foreach ($produit->images as $image) {
+                Storage::disk('public')->delete('produit_images/' . $image->image_path);
+            }
+
+            $produit->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Produit supprimé avec succès'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur suppression produit: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Erreur lors de la suppression du produit',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+     //changer le statut d'un produit (active/inactive)
+    public function toggleStatus(Produit $produit): JsonResponse
+    {
+        $newStatus = $produit->status === 'active' ? 'inactive' : 'active';
+        $produit->update(['status' => $newStatus]);
+
+        return response()->json([
+            'message' => 'Statut du produit mis à jour avec succès',
+            'data' => new ProduitResource($produit->load(['images', 'categorie']))
+        ]);
+    }
+
+    // Méthode privée pour gérer l'upload d'images
+    private function ajoutImages(Request $request, Produit $produit): void
+    {
+         // Vérifier si des fichiers ont été téléchargés
+        if (!$request->hasFile('images')) {
+            return;
+        }
+
+        $files = $request->file('images');
+        $isFirstImage = $produit->images()->count() === 0;
+
+        foreach ($files as $index => $file) {
+            // Générer un nom unique pour le fichier
+            $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            $extension = $file->getClientOriginalExtension();
+            $fileName = $originalName . '_' . time() . '_' . uniqid() . '.' . $extension;
+
+            // Stocker le fichier
+            $file->storeAs('public/produit_images', $fileName);
+
+            // Créer l'enregistrement en base
+            $produit->images()->create([
+                'image_path' => $fileName,
+                'is_cover' => $isFirstImage && $index === 0 // Premier fichier image  =  image_cover
+            ]);
+        }
     }
 }
