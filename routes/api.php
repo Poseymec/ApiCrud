@@ -56,6 +56,8 @@ Route::delete('/news-letters/{id}', [NewsLetterController::class, 'destroy']);
 
 */
 
+// route pour gerer les categories produits et images des produits
+
 Route::apiResource('categories', CategorieController::class);
 Route::apiResource('produits', ProduitController::class);
 Route::apiResource('site-elements', SiteElementController::class);
