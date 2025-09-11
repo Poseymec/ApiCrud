@@ -7,6 +7,7 @@ use App\Http\Controllers\ProduitImageController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\NewsLetterController;
 use App\http\Controllers\SiteElementController;
+use App\http\Controllers\SiteElementCategorieController;
 
 
 
@@ -60,6 +61,7 @@ Route::delete('/news-letters/{id}', [NewsLetterController::class, 'destroy']);
 
 Route::apiResource('categories', CategorieController::class);
 Route::apiResource('produits', ProduitController::class);
+Route::apiResource('SiteElementCategories', SiteElementCategorieController::class);
 Route::apiResource('site-elements', SiteElementController::class);
 Route::apiResource('contacts', ContactController::class);
 Route::apiResource('news-letters', NewsLetterController::class);

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('site_element_categorie_id')->constrained('site_element_categories')->onDelete('cascade');
             $table->string('name');
             $table->string('description')->nullable();
-            $table->string('type'); // 'header', 'footer', 'sidebar', etc. $table->string('content'); // texte ou url des images et logo 
+            $table->string('type'); // 'header', 'footer', 'sidebar', etc. $table->string('content'); // texte ou url des images et logo
             $table->string('status')->default('active'); // e.g., 'active', 'inactive'
             $table->timestamps();
         });
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('site_element');
+        Schema::dropIfExists('site_elements');
     }
 };
