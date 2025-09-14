@@ -22,7 +22,7 @@ class UpdateProduitRequest extends FormRequest
      */
     public function rules(): array
     {
-        $id=$this->route('produit');  //recupere l'id du produit a modifier
+       // $id=$this->route('produit');  //recupere l'id du produit a modifier
         return [
             'name' => [
                 'required',

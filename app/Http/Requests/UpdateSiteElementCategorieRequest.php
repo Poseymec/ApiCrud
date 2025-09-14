@@ -6,24 +6,18 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateSiteElementCategorieRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
-        $id = $this->route('id');  //recupere l'id de la categorie a modifier
+        // Utiliser directement l'ID de l'URL au lieu du model binding
+        $categoryId = $this->route('site_element_category'); // ou selon le nom de votre paramètre de route
+
         return [
-            'name'=> 'required|string|max:255|unique:categories,name'.$id,
+            'name' => 'required|string|max:255|unique:site_element_categories,name,' . $categoryId,
         ];
     }
 }

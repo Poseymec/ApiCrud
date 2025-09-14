@@ -34,7 +34,7 @@ class SiteElementCategorieController extends Controller
             'status' => 'success',
             'message' => 'Catégorie créée avec succès',
             'data' => new SiteElementCategorieResource($categorie)
-        ], 201); // 201 = Created
+        ], 201);
     }
 
     /**
@@ -53,22 +53,24 @@ class SiteElementCategorieController extends Controller
     /**
      * Mettre à jour une catégorie
      */
-    public function update(UpdateSiteElementCategorieRequest $request, SiteElementCategorie $siteElementCategorie): JsonResponse
+    public function update(UpdateSiteElementCategorieRequest $request, $id): JsonResponse
     {
+        $siteElementCategorie = SiteElementCategorie::findOrFail($id);
         $siteElementCategorie->update($request->validated());
 
         return response()->json([
             'status' => 'success',
             'message' => 'Catégorie mise à jour avec succès',
-            'data' => new SiteElementCategorieResource($siteElementCategorie)
+            'data' => new SiteElementCategorieResource($siteElementCategorie->fresh())
         ], 200);
     }
 
-    /**
-     * Supprimer une catégorie
-     */
-    public function destroy(SiteElementCategorie $siteElementCategorie): JsonResponse
+    // ✅ Correction de la méthode destroy
+    public function destroy($id): JsonResponse
     {
+        $siteElementCategorie = SiteElementCategorie::findOrFail($id);
+
+        // Supprimer directement sans vérification pour les tests
         $siteElementCategorie->delete();
 
         return response()->json([

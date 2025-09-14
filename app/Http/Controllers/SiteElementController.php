@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Http\Requests\StoreSiteElementRequest;
 use App\Http\Requests\UpdateSiteElementRequest;
 use App\Http\Resources\SiteElementResource;
@@ -27,21 +29,36 @@ class SiteElementController extends Controller
 
     public function store(StoreSiteElementRequest $request): JsonResponse
     {
-        $data = $request->validated();
+        try {
+            DB::beginTransaction(); // Démarrer une transaction
 
-        // Si c'est un fichier, on l'ajoute via notre méthode
-        if ($request->input('type') === 'file') {
-            $data['content'] = $this->ajoutFichier($request, 'content');
+            // Créer l'élément avec les données validées
+            $data = $request->validated();
+
+            // Gestion fichier si type = file
+            if ($request->input('type') === 'file' && $request->hasFile('content')) {
+                $data['content'] = $this->ajoutFichier($request, 'content');
+            }
+
+            $siteElement = SiteElement::create($data);
+
+            DB::commit(); // Valider la transaction
+
+            return response()->json([
+                'message' => 'Élément du site créé avec succès.',
+                'data' => new SiteElementResource($siteElement->load('siteElementCategorie'))
+            ], 201);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Annuler la transaction si erreur
+            Log::error('Erreur création SiteElement: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Erreur lors de la création de l\'élément.',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $element = SiteElement::create($data);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Élément créé avec succès.',
-            'data' => new SiteElementResource($element)
-        ], 201);
     }
+
 
     public function show(SiteElement $siteElement): JsonResponse
     {
@@ -55,30 +72,77 @@ class SiteElementController extends Controller
 
     public function update(UpdateSiteElementRequest $request, SiteElement $siteElement): JsonResponse
     {
-        $data = $request->validated();
+        try {
+            DB::beginTransaction(); // Démarrer une transaction
 
-        if ($request->input('type') === 'file' && $request->hasFile('content')) {
-            $data['content'] = $this->ajoutFichier($request, 'content');
+            $data = $request->validated();
+
+            // Gestion du fichier si type = file et un nouveau fichier est uploadé
+            if ($request->input('type') === 'file' && $request->hasFile('content')) {
+                $data['content'] = $this->ajoutFichier($request, 'content');
+            }
+
+            $siteElement->update($data);
+
+            DB::commit(); // Valider les changements
+
+            return response()->json([
+                'message' => 'Élément du site mis à jour avec succès.',
+                'data' => new SiteElementResource($siteElement->load('siteElementCategorie'))
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack(); // Annuler les changements en cas d’erreur
+            Log::error('Erreur mise à jour SiteElement: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Erreur lors de la mise à jour de l\'élément.',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $siteElement->update($data);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Élément mis à jour avec succès.',
-            'data' => new SiteElementResource($siteElement)
-        ], 200);
     }
+    /*
+        supprimer un element dans la base
+    */
+
 
     public function destroy(SiteElement $siteElement): JsonResponse
     {
-        $siteElement->delete();
+        try {
+            DB::beginTransaction();
+
+            $siteElement->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Élément supprimé avec succès.'
+            ], 200); // ✅ 200 pour un succès avec message (204 ne permet pas de message)
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Erreur suppression SiteElement: ' . $e->getMessage());
+
+            return response()->json([
+                'message' => 'Erreur lors de la suppression de l\'élément.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
+
+
+
+}
+   public function toggleStatus(SiteElement $element): JsonResponse
+    {
+        $newStatus = $element->status === 'active' ? 'inactive' : 'active';
+        $element->update(['status' => $newStatus]);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Élément supprimé avec succès.',
-        ], 204);
+            'message' => 'Statut de l’élément mis à jour avec succès',
+            'data' => new SiteElementResource($element)
+        ]);
     }
+
 
     // ----------------------------
     // Méthode privée pour stocker un fichier
@@ -92,10 +156,8 @@ class SiteElementController extends Controller
         $extension = $file->getClientOriginalExtension();
         $fileName = $originalName . '_' . time() . '_' . uniqid() . '.' . $extension;
 
-        // Stocker le fichier dans storage/app/public/site_elements
-        $file->storeAs('public/site_elements', $fileName);
-
-        // Retourner le chemin relatif à stocker dans la base
-        return 'site_elements/' . $fileName;
+        // Stocker le fichier avec votre nom personnalisé
+        $path = $file->storeAs('site_elements', $fileName, 'public');
+        return $path;
     }
 }

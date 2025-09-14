@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('description')->nullable();
             $table->string('type'); // 'header', 'footer', 'sidebar', etc. $table->string('content'); // texte ou url des images et logo
+            $table->longText('content'); // contenue " url image " ou texte
             $table->string('status')->default('active'); // e.g., 'active', 'inactive'
             $table->timestamps();
         });

@@ -32,3 +32,4 @@ class SiteElementResource extends JsonResource
         ];
     }
 }
+

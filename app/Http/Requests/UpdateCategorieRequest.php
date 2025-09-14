@@ -22,10 +22,10 @@ class UpdateCategorieRequest extends FormRequest
     public function rules(): array
 
     {
-        $id=$this->route('id');  //recupere l'id de la categorie a modifier
+       // $id=$this->route('id');  //recupere l'id de la categorie a modifier
         return [
-            'name'=> 'required|string|max:255|unique:categories,name,'.$id
-            
+            'name' => 'required|string|max:255|unique:site_element_categories,name,' 
+
         ];
     }
 }

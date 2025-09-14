@@ -3,14 +3,12 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProduitController;
 use App\Http\Controllers\CategorieController;
-use App\Http\Controllers\ProduitImageController;  
+use App\Http\Controllers\ProduitImageController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\NewsLetterController;
-use App\http\Controllers\SiteElementController;
-use App\http\Controllers\SiteElementCategorieController;
-
-
-
+use App\Http\Controllers\SiteElementController;
+use App\Http\Controllers\SiteElementCategorieController;
+use App\Models\SiteElement;
 
 // categories routes
 
@@ -43,7 +41,7 @@ Route::delete('/site-elements/{id}', [SiteElementController::class, 'destroy']);
 //Contact routes
 Route::post('/contacts', [ContactController::class, 'store']);
 Route::get('/contacts', [ContactController::class, 'index']);
-Route::get('/contacts/{id}', [ContactController::class, 'show']);   
+Route::get('/contacts/{id}', [ContactController::class, 'show']);
 Route::put('/contacts/{id}', [ContactController::class, 'update']);
 Route::delete('/contacts/{id}', [ContactController::class, 'destroy']);
 
@@ -61,8 +59,10 @@ Route::delete('/news-letters/{id}', [NewsLetterController::class, 'destroy']);
 
 Route::apiResource('categories', CategorieController::class);
 Route::apiResource('produits', ProduitController::class);
-Route::apiResource('SiteElementCategories', SiteElementCategorieController::class);
+Route::apiResource('site-element-categories', SiteElementCategorieController::class);
 Route::apiResource('site-elements', SiteElementController::class);
 Route::apiResource('contacts', ContactController::class);
 Route::apiResource('news-letters', NewsLetterController::class);
 Route::patch('produits/{produit}/toggle-status', [ProduitController::class, 'toggleStatus']);
+Route::patch('site-elements/{element}/toggle-status', [SiteElement::class, 'toggleStatus']);
+

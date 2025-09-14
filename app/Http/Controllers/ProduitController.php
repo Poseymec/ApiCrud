@@ -22,7 +22,7 @@ class ProduitController extends Controller
         $produits = Produit::with(['images', 'categorie'])->get();
         return ProduitResource::collection($produits);
     }
-     
+
     //enregistrer un nouveau produit en uilisant le form request StoreProduitRequest
     public function store(StoreProduitRequest $request): JsonResponse // un JsonResponse pour retourner une reponse json
     {
@@ -59,11 +59,15 @@ class ProduitController extends Controller
     }
 
     //afficher un produit par son id avec ses images et sa categorie
-    public function show(string $id)
+    public function show(Produit $produit)
     {
-        $produit = Produit::with(['images', 'categorie'])->findOrFail($id);
+        // Charger les relations images et catégorie
+        $produit->load(['images', 'categorie']);
+
+        // Retourner directement le resource
         return new ProduitResource($produit);
     }
+
 
     //mettre a jour un produit par son id en utilisant le form request UpdateProduitRequest
     public function update(UpdateProduitRequest $request, Produit $produit): JsonResponse
