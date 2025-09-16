@@ -112,13 +112,36 @@ class SiteElementTest extends TestCase
         $this->assertDatabaseMissing('site_elements', ['id' => $element->id]);
     }
 
-    // ✅ SUPPRIMER TOUS LES TESTS DE CATÉGORIES D'ICI
-    // Ces tests doivent être dans SiteElementCategorieTest.php uniquement
 
-    // Supprimer ces méthodes :
-    // - it_can_list_all_site_element_categories
-    // - it_can_create_a_site_element_category
-    // - it_validates_unique_name_for_site_element_category
-    // - it_can_update_a_site_element_category
-    // - it_can_delete_a_site_element_category
+    /** @test DE STATUS */
+    public function test_it_can_toggle_site_element_status()
+    {
+        $category = SiteElementCategorie::factory()->create();
+
+        $element = SiteElement::factory()->create([
+            'site_element_categorie_id' => $category->id,
+            'status' => 'active'
+        ]);
+
+        // Test toggle de active vers inactive
+        $response = $this->patchJson("/api/site-elements/{$element->id}/toggle-status");
+
+        $response->assertStatus(200)
+            ->assertJsonPath('message', 'Statut de l\'élément mis à jour avec succès')
+            ->assertJsonPath('data.status', 'inactive');
+
+        // Vérifier en base de données
+        $this->assertDatabaseHas('site_elements', [
+            'id' => $element->id,
+            'status' => 'inactive'
+        ]);
+
+        // Test toggle de inactive vers active
+        $response = $this->patchJson("/api/site-elements/{$element->id}/toggle-status");
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.status', 'active');
+    }
+
+
 }

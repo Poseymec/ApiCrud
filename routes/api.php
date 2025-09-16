@@ -61,8 +61,9 @@ Route::apiResource('categories', CategorieController::class);
 Route::apiResource('produits', ProduitController::class);
 Route::apiResource('site-element-categories', SiteElementCategorieController::class);
 Route::apiResource('site-elements', SiteElementController::class);
-Route::apiResource('contacts', ContactController::class);
+Route::apiResource('contacts', ContatController::class);
 Route::apiResource('news-letters', NewsLetterController::class);
 Route::patch('produits/{produit}/toggle-status', [ProduitController::class, 'toggleStatus']);
-Route::patch('site-elements/{element}/toggle-status', [SiteElement::class, 'toggleStatus']);
+Route::patch('site-elements/{element}/toggle-status', [SiteElementController::class, 'toggleStatus']);
+Route::patch('contacts/{contact}/toggle-status', [ContactController::class, 'toggleStatus']);
 

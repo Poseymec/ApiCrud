@@ -132,14 +132,24 @@ class SiteElementController extends Controller
 
 
 }
-   public function toggleStatus(SiteElement $element): JsonResponse
+   /*public function toggleStatus(SiteElement $element): JsonResponse
     {
         $newStatus = $element->status === 'active' ? 'inactive' : 'active';
         $element->update(['status' => $newStatus]);
 
         return response()->json([
-            'message' => 'Statut de l’élément mis à jour avec succès',
+            'message' => 'Statut de l\’élément mis à jour avec succès',
             'data' => new SiteElementResource($element)
+        ]);
+    }*/
+    public function toggleStatus(SiteElement $element): JsonResponse
+    {
+        $newStatus = $element->status === 'active' ? 'inactive' : 'active';
+        $element->update(['status' => $newStatus]);
+
+        return response()->json([
+            'message' => 'Statut de l\'élément mis à jour avec succès',
+            'data' => new SiteElementResource($element->fresh())
         ]);
     }
 
