@@ -13,7 +13,7 @@ class ContactFactory extends Factory
     {
         return [
             'name' => $this->faker->name,
-            'email' => $this->faker->unique()->safeEmail,
+            'email' => $this->faker->email,
             'message' => $this->faker->sentence,
             'phone' => $this->faker->phoneNumber,
             'status' => 'unread', // par défaut

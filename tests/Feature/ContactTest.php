@@ -1,7 +1,7 @@
 <?php
 
 namespace Tests\Feature;
-
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use App\Models\Contact;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -32,7 +32,7 @@ class ContactTest extends TestCase
             'name' => 'John Doe',
             'email' => 'john@example.com',
             'message' => 'Hello, test message',
-            'phone' => '699999999' // 🔥 ajouté
+            'phone' => '699999999'
         ];
 
         $response = $this->postJson('/api/contacts', $data);

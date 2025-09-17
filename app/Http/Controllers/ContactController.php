@@ -27,13 +27,22 @@ class ContactController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
     public function store(StoreContactRequest $request): JsonResponse
     {
-        $contacts = Contact::create($request->validated());
-        return response()->json([
-            'message'=>'conctact cree avec succes',
-            'data'=> new ContactResource($contacts)
-        ],201);
+        try {
+            $contact = Contact::create($request->validated());
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Contact créé avec succès',
+                'data' => new ContactResource($contact)
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

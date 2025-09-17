@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreContactRequest extends FormRequest
+class StoreNewsLetterRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,11 +22,8 @@ class StoreContactRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'=>'required|string|max:255',
-            'email'=>'required|email|max:255',
+            'email'=>'required|email|unique:news_letters,email',
             'phone'=>'nullable|string|max:20',
-            'message'=>'required|string|max:2000',
-            'status'=>'sometimes|in:read,unread',
         ];
     }
 }
